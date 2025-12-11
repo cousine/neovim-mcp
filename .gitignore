@@ -1,0 +1,28 @@
+# Binaries
+dist/neovim-mcp
+
+# Go
+vendor/
+*.test
+*.out
+*.prof
+
+# Coverage
+coverage.out
+coverage.html
+
+# Temporary files
+tmp/
+*.sock
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
