@@ -15,33 +15,31 @@ func TestLoad_Defaults(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)
 
-	assert.Equal(t, "/tmp/nvim.sock", cfg.Neovim.SocketAddress)
+	assert.Equal(t, "/tmp/nvim.sock", cfg.SocketAddress)
 }
 
 func TestLoad_WithEnvVars(t *testing.T) {
 	// Set environment variables
-	os.Setenv("NVIM_LISTEN_ADDRESS", "/tmp/custom.sock")
-	os.Setenv("NVIM_TIMEOUT", "10")
+	os.Setenv("NVIM_MCP_LISTEN_ADDRESS", "/tmp/custom.sock")
 	defer func() {
-		os.Unsetenv("NVIM_LISTEN_ADDRESS")
-		os.Unsetenv("NVIM_TIMEOUT")
+		os.Unsetenv("NVIM_MCP_LISTEN_ADDRESS")
 	}()
 
 	cfg, err := Load()
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)
 
-	assert.Equal(t, "/tmp/custom.sock", cfg.Neovim.SocketAddress)
+	assert.Equal(t, "/tmp/custom.sock", cfg.SocketAddress)
 }
 
 func TestLoad_WithSocketAddress(t *testing.T) {
 	// Test alternate env var name
-	os.Setenv("NVIM_SOCKET_ADDRESS", "/tmp/alt.sock")
-	defer os.Unsetenv("NVIM_SOCKET_ADDRESS")
+	os.Setenv("NVIM_MCP_SOCKET_ADDRESS", "/tmp/alt.sock")
+	defer os.Unsetenv("NVIM_MCP_SOCKET_ADDRESS")
 
 	cfg, err := Load()
 	assert.NoError(t, err)
 	assert.NotNil(t, cfg)
 
-	assert.Equal(t, "/tmp/alt.sock", cfg.Neovim.SocketAddress)
+	assert.Equal(t, "/tmp/alt.sock", cfg.SocketAddress)
 }

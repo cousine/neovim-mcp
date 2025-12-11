@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
@@ -17,7 +16,7 @@ import (
 
 func main() {
 	if err := run(); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
@@ -47,12 +46,12 @@ func run() error {
 
 	logger.Info("Neovim MCP server starting")
 	logger.Debug("Configuration loaded",
-		"socket", cfg.Neovim.SocketAddress,
+		"socket", cfg.SocketAddress,
 		"log_level", cfg.Log.Level,
 		"log_file", cfg.Log.FilePath)
 
 	// Connect to Neovim
-	nvimClient, err := nvim.NewClient(cfg.Neovim.SocketAddress)
+	nvimClient, err := nvim.NewClient(cfg.SocketAddress)
 	if err != nil {
 		logger.Error("Failed to connect to Neovim", "error", err)
 		return fmt.Errorf("failed to connect to neovim: %w", err)
@@ -66,7 +65,7 @@ func run() error {
 		}
 	}()
 
-	logger.Info("Connected to Neovim", "address", cfg.Neovim.SocketAddress)
+	logger.Info("Connected to Neovim", "address", cfg.SocketAddress)
 
 	// Create MCP server
 	server := mcpserver.NewServer(nvimClient)

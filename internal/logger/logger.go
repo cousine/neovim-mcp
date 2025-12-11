@@ -44,7 +44,7 @@ func New(cfg Config) (*slog.Logger, error) {
 		return slog.New(slog.NewTextHandler(io.Discard, nil)), nil
 	}
 
-	writer := io.Discard
+	writer := os.Stdout
 
 	// Setup file output if specified
 	if cfg.FilePath != "" {

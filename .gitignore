@@ -1,5 +1,5 @@
 # Binaries
-dist/neovim-mcp
+dist/
 
 # Go
 vendor/
