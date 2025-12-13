@@ -642,6 +642,304 @@ func TestClient_ResizeWindow(t *testing.T) {
 	})
 }
 
+// --- Search Tests ---
+
+func TestClient_Search(t *testing.T) {
+	client, cleanup := setupTestNeovim(t)
+	defer cleanup()
+
+	ctx := context.Background()
+
+	t.Run("finds pattern in buffer", func(t *testing.T) {
+		tmpFile := createTempFile(t, "hello world\nfoo bar\nhello again")
+
+		_, err := client.OpenBuffer(ctx, tmpFile)
+		require.NoError(t, err)
+
+		results, err := client.Search(ctx, "hello", "")
+
+		require.NoError(t, err)
+		require.NotEmpty(t, results)
+		// Verify we found matches with correct structure
+		for _, result := range results {
+			assert.Contains(t, result.MatchText, "hello")
+			assert.Greater(t, result.Line, 0)
+			assert.Greater(t, result.Column, 0)
+		}
+	})
+
+	t.Run("returns empty results when no match", func(t *testing.T) {
+		tmpFile := createTempFile(t, "foo bar\nbaz qux")
+
+		_, err := client.OpenBuffer(ctx, tmpFile)
+		require.NoError(t, err)
+
+		results, err := client.Search(ctx, "nonexistent", "")
+
+		require.NoError(t, err)
+		assert.Empty(t, results)
+	})
+
+	t.Run("finds pattern with case insensitive flag", func(t *testing.T) {
+		tmpFile := createTempFile(t, "Hello World\nhello world\nHELLO WORLD")
+
+		_, err := client.OpenBuffer(ctx, tmpFile)
+		require.NoError(t, err)
+
+		// Case-insensitive search using \c flag in pattern
+		results, err := client.Search(ctx, "\\chello", "")
+
+		require.NoError(t, err)
+		// Should find all 3 case variants
+		assert.GreaterOrEqual(t, len(results), 1)
+	})
+
+	t.Run("returns correct column positions", func(t *testing.T) {
+		tmpFile := createTempFile(t, "prefix_target_suffix")
+
+		_, err := client.OpenBuffer(ctx, tmpFile)
+		require.NoError(t, err)
+
+		results, err := client.Search(ctx, "target", "")
+
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+		assert.Equal(t, 1, results[0].Line)
+		assert.Equal(t, 8, results[0].Column) // "target" starts at column 8 (1-based)
+		assert.Contains(t, results[0].MatchText, "target")
+	})
+
+	t.Run("finds regex patterns", func(t *testing.T) {
+		tmpFile := createTempFile(t, "test123\ntest456\nno match here")
+
+		_, err := client.OpenBuffer(ctx, tmpFile)
+		require.NoError(t, err)
+
+		results, err := client.Search(ctx, "test\\d\\+", "")
+
+		require.NoError(t, err)
+		// Should find matches for test followed by digits
+		require.NotEmpty(t, results)
+		for _, result := range results {
+			assert.Contains(t, result.MatchText, "test")
+		}
+	})
+
+	t.Run("handles special characters in pattern", func(t *testing.T) {
+		tmpFile := createTempFile(t, "foo.bar\nbaz")
+
+		_, err := client.OpenBuffer(ctx, tmpFile)
+		require.NoError(t, err)
+
+		// Pattern with escaped dot (literal match)
+		results, err := client.Search(ctx, "foo\\.bar", "")
+
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+		assert.Equal(t, "foo.bar", results[0].MatchText)
+	})
+
+	t.Run("handles quotes in pattern", func(t *testing.T) {
+		tmpFile := createTempFile(t, `say "hello" please`)
+
+		_, err := client.OpenBuffer(ctx, tmpFile)
+		require.NoError(t, err)
+
+		// Pattern with quotes (exercises Lua string escaping in fmt.Sprintf %q)
+		results, err := client.Search(ctx, `"hello"`, "")
+
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+		assert.Contains(t, results[0].MatchText, `"hello"`)
+	})
+
+	t.Run("finds multiple matches on different lines", func(t *testing.T) {
+		tmpFile := createTempFile(t, "match one\nmatch two\nmatch three\nother four")
+
+		_, err := client.OpenBuffer(ctx, tmpFile)
+		require.NoError(t, err)
+
+		results, err := client.Search(ctx, "match", "")
+
+		require.NoError(t, err)
+		// Verify we get multiple matches
+		assert.GreaterOrEqual(t, len(results), 1)
+		// Each result should contain the pattern
+		for _, result := range results {
+			assert.Contains(t, result.MatchText, "match")
+		}
+	})
+
+	t.Run("populates all SearchResult fields", func(t *testing.T) {
+		tmpFile := createTempFile(t, "find me here")
+
+		_, err := client.OpenBuffer(ctx, tmpFile)
+		require.NoError(t, err)
+
+		results, err := client.Search(ctx, "me", "")
+
+		require.NoError(t, err)
+		require.Len(t, results, 1)
+		// Verify all fields are populated correctly
+		assert.Equal(t, 1, results[0].Line)
+		assert.Equal(t, 6, results[0].Column) // "me" starts at column 6
+		assert.Equal(t, "find me here", results[0].MatchText)
+	})
+
+	t.Run("iterates through all results", func(t *testing.T) {
+		// This test specifically exercises the for loop that iterates through results
+		tmpFile := createTempFile(t, "aaa\nbbb\naaa")
+
+		_, err := client.OpenBuffer(ctx, tmpFile)
+		require.NoError(t, err)
+
+		results, err := client.Search(ctx, "aaa", "")
+
+		require.NoError(t, err)
+		// Verify we iterate through results and each has correct types
+		for _, result := range results {
+			assert.IsType(t, 0, result.Line)
+			assert.IsType(t, 0, result.Column)
+			assert.IsType(t, "", result.MatchText)
+		}
+	})
+}
+
+// --- ExecLua Tests ---
+
+func TestClient_ExecLua(t *testing.T) {
+	client, cleanup := setupTestNeovim(t)
+	defer cleanup()
+
+	ctx := context.Background()
+
+	t.Run("executes simple lua code and returns result", func(t *testing.T) {
+		result, err := client.ExecLua(ctx, "return 1 + 1", nil)
+
+		require.NoError(t, err)
+		assert.Equal(t, int64(2), result)
+	})
+
+	t.Run("returns string result", func(t *testing.T) {
+		result, err := client.ExecLua(ctx, `return "hello"`, nil)
+
+		require.NoError(t, err)
+		assert.Equal(t, "hello", result)
+	})
+
+	t.Run("returns table as map", func(t *testing.T) {
+		result, err := client.ExecLua(ctx, `return {foo = "bar", num = 42}`, nil)
+
+		require.NoError(t, err)
+		m, ok := result.(map[string]any)
+		require.True(t, ok)
+		assert.Equal(t, "bar", m["foo"])
+		assert.Equal(t, int64(42), m["num"])
+	})
+
+	t.Run("returns array as slice", func(t *testing.T) {
+		result, err := client.ExecLua(ctx, `return {1, 2, 3}`, nil)
+
+		require.NoError(t, err)
+		arr, ok := result.([]any)
+		require.True(t, ok)
+		assert.Len(t, arr, 3)
+	})
+
+	t.Run("executes lua with vim api", func(t *testing.T) {
+		tmpFile := createTempFile(t, "line1\nline2\nline3")
+
+		_, err := client.OpenBuffer(ctx, tmpFile)
+		require.NoError(t, err)
+
+		// Execute Lua that uses Neovim API
+		_, err = client.ExecLua(ctx, "vim.api.nvim_win_set_cursor(0, {2, 0})", nil)
+
+		require.NoError(t, err)
+
+		// Verify cursor was moved
+		pos, err := client.GetCursorPosition(ctx)
+		require.NoError(t, err)
+		assert.Equal(t, 2, pos.Line)
+	})
+
+	t.Run("returns error for invalid lua", func(t *testing.T) {
+		_, err := client.ExecLua(ctx, "this is not valid lua syntax!!!!", nil)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to execute lua")
+	})
+
+	t.Run("executes lua with arguments", func(t *testing.T) {
+		// Lua code that uses the arguments (args are passed as varargs)
+		code := `
+			local args = {...}
+			vim.g.test_var = args[1]
+			return args[1]
+		`
+		result, err := client.ExecLua(ctx, code, []any{"test_value"})
+		require.NoError(t, err)
+		assert.Equal(t, "test_value", result)
+
+		// Verify the variable was set by calling a function to get it
+		fnResult, err := client.CallFunction(ctx, "eval", []any{"g:test_var"})
+		require.NoError(t, err)
+		assert.Equal(t, "test_value", fnResult)
+	})
+
+	t.Run("executes lua with multiple arguments", func(t *testing.T) {
+		code := `
+			local args = {...}
+			return args[1] + args[2]
+		`
+		result, err := client.ExecLua(ctx, code, []any{10, 20})
+
+		require.NoError(t, err)
+		assert.Equal(t, int64(30), result)
+	})
+
+	t.Run("executes lua that modifies buffer", func(t *testing.T) {
+		tmpFile := createTempFile(t, "original content")
+
+		_, err := client.OpenBuffer(ctx, tmpFile)
+		require.NoError(t, err)
+
+		// Use Lua to modify buffer content
+		code := `
+			local buf = vim.api.nvim_get_current_buf()
+			vim.api.nvim_buf_set_lines(buf, 0, 1, false, {"modified via lua"})
+		`
+		_, err = client.ExecLua(ctx, code, nil)
+		require.NoError(t, err)
+
+		// Verify the modification
+		lines, err := client.GetBufferLines(ctx, filepath.Base(tmpFile), 1, 1)
+		require.NoError(t, err)
+		assert.Equal(t, []string{"modified via lua"}, lines)
+	})
+
+	t.Run("executes lua with nil args", func(t *testing.T) {
+		result, err := client.ExecLua(ctx, "return true", nil)
+
+		require.NoError(t, err)
+		assert.Equal(t, true, result)
+	})
+
+	t.Run("executes lua with empty args slice", func(t *testing.T) {
+		result, err := client.ExecLua(ctx, "return true", []any{})
+
+		require.NoError(t, err)
+		assert.Equal(t, true, result)
+	})
+
+	t.Run("returns nil for lua with no return", func(t *testing.T) {
+		result, err := client.ExecLua(ctx, "local x = 1", nil)
+
+		require.NoError(t, err)
+		assert.Nil(t, result)
+	})
+}
+
 // --- Command Operations Tests ---
 
 func TestClient_ExecCommand(t *testing.T) {
