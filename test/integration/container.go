@@ -70,8 +70,9 @@ func StartNeovim(ctx context.Context, opts ...Option) (*NeovimContainer, error) 
 		FromDockerfile: testcontainers.FromDockerfile{
 			Context:    filepath.Join("..", ".."),
 			Dockerfile: "test/Dockerfile.neovim",
+			Tag:        "neovim-test",
+			KeepImage:  true,
 		},
-
 		ExposedPorts: []string{neovimRPCPort},
 		Cmd:          cmd,
 		WaitingFor:   wait.ForListeningPort(nat.Port(neovimRPCPort)).WithStartupTimeout(containerTimeout * time.Second),
