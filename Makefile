@@ -47,10 +47,15 @@ test-unit: ## Run unit tests only (fast)
 	@echo "Running unit tests..."
 	$(GO) test -v -race -coverprofile=coverage.out ./internal/... ./cmd/...
 
-test-integration: ## Run integration tests (requires Neovim)
-	@echo "Running integration tests..."
-	@echo "Note: This requires Neovim to be installed"
+test-integration: ## Run integration tests with Docker containers (default)
+	@echo "Running integration tests with containers..."
+	@echo "Note: Requires Docker to be running"
 	$(GO) test -tags=integration -v -race -coverprofile=coverage.out ./test/integration/...
+
+test-integration-local: ## Run integration tests with local Neovim
+	@echo "Running integration tests with local Neovim..."
+	@echo "Note: Requires Neovim to be installed"
+	NEOVIM_TEST_LOCAL=1 $(GO) test -tags=integration -v -race -coverprofile=coverage.out ./test/integration/...
 
 test-coverage: ## Run tests with coverage report (HTML)
 	@echo "Running tests with coverage..."

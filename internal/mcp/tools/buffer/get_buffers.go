@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+
 	mcpserver "neovim-mcp/internal/mcp"
 )
 

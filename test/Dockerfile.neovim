@@ -1,0 +1,10 @@
+FROM alpine:3.19
+
+# Install Neovim
+RUN apk add --no-cache neovim
+
+# Set working directory
+WORKDIR /workspace
+
+# Default command will be overridden by testcontainers
+# CMD will be set to: nvim --headless --listen /tmp/nvim.sock

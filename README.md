@@ -185,6 +185,42 @@ Always check tool response status and provide meaningful feedback to users.
 - Should only be used with trusted AI agents
 - Consider running Neovim with restricted permissions
 
+## Testing
+
+### Integration Tests
+
+The project uses testcontainers for isolated, reproducible integration testing:
+
+```bash
+# Run integration tests with Docker containers (default)
+make test-integration
+
+# Run integration tests with local Neovim (faster for development)
+make test-integration-local
+
+# Run all tests (unit + integration)
+make test
+```
+
+**Requirements:**
+- **Container mode** (default): Docker must be running
+- **Local mode**: Neovim must be installed locally
+
+The containerized tests provide:
+- Isolated test environment (no conflicts with your local Neovim)
+- Reproducible across all platforms
+- No need to install Neovim locally
+- Automatic cleanup after tests
+
+Use `NEOVIM_TEST_LOCAL=1` environment variable to use local Neovim instead of containers.
+
+### Unit Tests
+
+```bash
+# Run unit tests only (no Docker required)
+make test-unit
+```
+
 ## Development Status
 
 This is an early-stage project. Tool implementations may change as development progresses.
