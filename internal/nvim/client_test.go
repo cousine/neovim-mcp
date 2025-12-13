@@ -197,10 +197,10 @@ func TestClient_GetBufferByTitle(t *testing.T) {
 		_, err := client.OpenBuffer(ctx, tmpFile)
 		require.NoError(t, err)
 
-		handle, err := client.GetBufferByTitle(ctx, filepath.Base(tmpFile))
+		buffer, err := client.GetBufferByTitle(ctx, filepath.Base(tmpFile))
 
 		require.NoError(t, err)
-		assert.NotZero(t, handle)
+		assert.NotZero(t, buffer.Handle)
 	})
 
 	t.Run("finds buffer by partial path", func(t *testing.T) {
@@ -209,10 +209,10 @@ func TestClient_GetBufferByTitle(t *testing.T) {
 		_, err := client.OpenBuffer(ctx, tmpFile)
 		require.NoError(t, err)
 
-		handle, err := client.GetBufferByTitle(ctx, tmpFile)
+		buffer, err := client.GetBufferByTitle(ctx, tmpFile)
 
 		require.NoError(t, err)
-		assert.NotZero(t, handle)
+		assert.NotZero(t, buffer.Handle)
 	})
 
 	t.Run("returns error for non-existent buffer", func(t *testing.T) {
@@ -1019,9 +1019,9 @@ func (m *MockClient) GetBuffers(ctx context.Context) ([]types.BufferInfo, error)
 }
 
 // GetBufferByTitle finds a buffer by its title
-func (m *MockClient) GetBufferByTitle(ctx context.Context, title string) (nvim.Buffer, error) {
+func (m *MockClient) GetBufferByTitle(ctx context.Context, title string) (types.BufferInfo, error) {
 	args := m.Called(ctx, title)
-	return args.Get(0).(nvim.Buffer), args.Error(1)
+	return args.Get(0).(types.BufferInfo), args.Error(1)
 }
 
 // GetCurrentBuffer returns the currently active buffer

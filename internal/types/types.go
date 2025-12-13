@@ -1,3 +1,4 @@
+// Package types defines common types used across packages
 package types
 
 import (
@@ -11,7 +12,7 @@ import (
 type NeovimClient interface {
 	// Buffer operations
 	GetBuffers(ctx context.Context) ([]BufferInfo, error)
-	GetBufferByTitle(ctx context.Context, title string) (nvim.Buffer, error)
+	GetBufferByTitle(ctx context.Context, title string) (BufferInfo, error)
 	GetCurrentBuffer(ctx context.Context) (BufferInfo, error)
 	OpenBuffer(ctx context.Context, path string) (BufferInfo, error)
 	CloseBuffer(ctx context.Context, title string) error
@@ -37,8 +38,8 @@ type NeovimClient interface {
 
 	// Command operations
 	ExecCommand(ctx context.Context, command string) (string, error)
-	ExecLua(ctx context.Context, code string, args []interface{}) (interface{}, error)
-	CallFunction(ctx context.Context, fname string, args []interface{}) (interface{}, error)
+	ExecLua(ctx context.Context, code string, args []any) (any, error)
+	CallFunction(ctx context.Context, fname string, args []any) (any, error)
 
 	// Lifecycle
 	Close() error
