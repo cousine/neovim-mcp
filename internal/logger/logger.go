@@ -50,12 +50,12 @@ func New(cfg Config) (*slog.Logger, error) {
 	if cfg.FilePath != "" {
 		// Create directory if it doesn't exist
 		dir := filepath.Dir(cfg.FilePath)
-		if err := os.MkdirAll(dir, 0o755); err != nil {
+		if err := os.MkdirAll(dir, 0o750); err != nil {
 			return nil, fmt.Errorf("failed to create log directory: %w", err)
 		}
 
 		// Open log file with append mode
-		f, err := os.OpenFile(cfg.FilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
+		f, err := os.OpenFile(cfg.FilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open log file: %w", err)
 		}

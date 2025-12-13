@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/neovim/go-client/nvim"
@@ -14,8 +15,10 @@ import (
 )
 
 const (
+	// SplitDirectionHorizontal indicates a horizontal nvim window split
 	SplitDirectionHorizontal = "horizontal"
-	SplitDirectionVertical   = "vertical"
+	// SplitDirectionVertical indicates a vertical nvim window split
+	SplitDirectionVertical = "vertical"
 )
 
 // Client wraps the Neovim RPC client
@@ -58,9 +61,9 @@ func (c *Client) RefreshBufferCache(ctx context.Context) error {
 
 	c.bufferCache = make(map[nvim.Buffer]string)
 	for _, buf := range buffers {
-		name, err := c.nvim.BufferName(buf)
-		if err != nil {
-			logger.Debug("nvim: failed to read buffer", "error", err)
+		name, berr := c.nvim.BufferName(buf)
+		if berr != nil {
+			logger.Debug("nvim: failed to read buffer", "error", berr)
 			continue
 		}
 
@@ -131,8 +134,8 @@ func (c *Client) CloseBuffer(ctx context.Context, title string) error {
 		return fmt.Errorf("failed to close buffer `%s`: %w", title, err)
 	}
 
-	if err := c.nvim.Command(fmt.Sprintf(CmdDeleteBuffer, buf)); err != nil {
-		return fmt.Errorf("failed to close buffer `%s`: %w", title, err)
+	if cerr := c.nvim.Command(fmt.Sprintf(CmdDeleteBuffer, buf)); cerr != nil {
+		return fmt.Errorf("failed to close buffer `%s`: %w", title, cerr)
 	}
 
 	return nil
@@ -145,8 +148,8 @@ func (c *Client) SwitchBuffer(ctx context.Context, title string) error {
 		return fmt.Errorf("failed to switch to buffer `%s`: %w", title, err)
 	}
 
-	if err := c.nvim.SetCurrentBuffer(buf); err != nil {
-		return fmt.Errorf("failed to switch to buffer `%s`: %w", title, err)
+	if berr := c.nvim.SetCurrentBuffer(buf); berr != nil {
+		return fmt.Errorf("failed to switch to buffer `%s`: %w", title, berr)
 	}
 
 	return nil
@@ -184,8 +187,8 @@ func (c *Client) SetBufferLines(ctx context.Context, title string, start, end in
 		byteLines[i] = []byte(line)
 	}
 
-	if err := c.nvim.SetBufferLines(buf, start-1, end, true, byteLines); err != nil {
-		return fmt.Errorf("failed to set lines in buffer `%s`: %w", title, err)
+	if berr := c.nvim.SetBufferLines(buf, start-1, end, true, byteLines); berr != nil {
+		return fmt.Errorf("failed to set lines in buffer `%s`: %w", title, berr)
 	}
 
 	return nil
@@ -237,8 +240,8 @@ func (c *Client) SetCursorPosition(ctx context.Context, line, col int) error {
 		return fmt.Errorf("failed to set cursor position: %w", err)
 	}
 
-	if err := c.nvim.SetWindowCursor(w, [2]int{line, col - 1}); err != nil {
-		return fmt.Errorf("failed to set cursor position: %w", err)
+	if werr := c.nvim.SetWindowCursor(w, [2]int{line, col - 1}); werr != nil {
+		return fmt.Errorf("failed to set cursor position: %w", werr)
 	}
 
 	return nil
@@ -246,7 +249,7 @@ func (c *Client) SetCursorPosition(ctx context.Context, line, col int) error {
 
 // GotoLine moves the cursor to a specific line
 func (c *Client) GotoLine(ctx context.Context, line int) error {
-	if err := c.nvim.Command(fmt.Sprintf("%d", line)); err != nil {
+	if err := c.nvim.Command(strconv.Itoa(line)); err != nil {
 		return fmt.Errorf("failed to goto line %d : %w", line, err)
 	}
 
@@ -278,11 +281,34 @@ func (c *Client) Search(ctx context.Context, pattern string, flags string) ([]ty
 
 	searchResults := make([]types.SearchResult, 0, len(results))
 	for _, r := range results {
-		m := r.(map[string]any)
+		m, resOk := r.(map[string]any)
+		if !resOk {
+			logger.Debug("result is an unknown type: %t", r)
+			continue
+		}
+
+		line, lOk := m["line"].(int64)
+		if !lOk {
+			logger.Debug("line is an unknown type: %t", line)
+			continue
+		}
+
+		col, colOk := m["col"].(int64)
+		if !colOk {
+			logger.Debug("col is an unknown type: %t", colOk)
+			continue
+		}
+
+		matchText, matchOk := m["text"].(string)
+		if !matchOk {
+			logger.Debug("match text is an unknown type: %t", matchText)
+			continue
+		}
+
 		searchResults = append(searchResults, types.SearchResult{
-			Line:      int(m["line"].(float64)),
-			Column:    int(m["col"].(float64)),
-			MatchText: m["text"].(string),
+			Line:      int(line),
+			Column:    int(col),
+			MatchText: matchText,
 		})
 	}
 
@@ -298,9 +324,9 @@ func (c *Client) GetWindows(ctx context.Context) ([]types.WindowInfo, error) {
 
 	result := make([]types.WindowInfo, 0, len(windows))
 	for _, win := range windows {
-		winInfo, err := c.getWindowInfo(win)
-		if err != nil {
-			logger.Debug("nvim: failed to retrieve window info", "error", err)
+		winInfo, werr := c.getWindowInfo(win)
+		if werr != nil {
+			logger.Debug("nvim: failed to retrieve window info", "error", werr)
 			continue
 		}
 
@@ -380,7 +406,7 @@ func (c *Client) ExecCommand(ctx context.Context, command string) (string, error
 // ExecLua executes Lua code
 func (c *Client) ExecLua(ctx context.Context, code string, args []any) (any, error) {
 	var result any
-	if err := c.nvim.ExecLua(code, result, args...); err != nil {
+	if err := c.nvim.ExecLua(code, &result, args...); err != nil {
 		return nil, fmt.Errorf("failed to execute lua: %w", err)
 	}
 

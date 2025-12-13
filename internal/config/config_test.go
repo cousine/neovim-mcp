@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestLoad_Defaults(t *testing.T) {
@@ -12,34 +12,34 @@ func TestLoad_Defaults(t *testing.T) {
 	os.Clearenv()
 
 	cfg, err := Load()
-	assert.NoError(t, err)
-	assert.NotNil(t, cfg)
+	require.NoError(t, err)
+	require.NotNil(t, cfg)
 
-	assert.Equal(t, "/tmp/nvim.sock", cfg.SocketAddress)
+	require.Equal(t, "/tmp/nvim.sock", cfg.SocketAddress)
 }
 
 func TestLoad_WithEnvVars(t *testing.T) {
 	// Set environment variables
-	os.Setenv("NVIM_MCP_LISTEN_ADDRESS", "/tmp/custom.sock")
+	t.Setenv("NVIM_MCP_LISTEN_ADDRESS", "/tmp/custom.sock")
 	defer func() {
 		os.Unsetenv("NVIM_MCP_LISTEN_ADDRESS")
 	}()
 
 	cfg, err := Load()
-	assert.NoError(t, err)
-	assert.NotNil(t, cfg)
+	require.NoError(t, err)
+	require.NotNil(t, cfg)
 
-	assert.Equal(t, "/tmp/custom.sock", cfg.SocketAddress)
+	require.Equal(t, "/tmp/custom.sock", cfg.SocketAddress)
 }
 
 func TestLoad_WithSocketAddress(t *testing.T) {
 	// Test alternate env var name
-	os.Setenv("NVIM_MCP_SOCKET_ADDRESS", "/tmp/alt.sock")
+	t.Setenv("NVIM_MCP_SOCKET_ADDRESS", "/tmp/alt.sock")
 	defer os.Unsetenv("NVIM_MCP_SOCKET_ADDRESS")
 
 	cfg, err := Load()
-	assert.NoError(t, err)
-	assert.NotNil(t, cfg)
+	require.NoError(t, err)
+	require.NotNil(t, cfg)
 
-	assert.Equal(t, "/tmp/alt.sock", cfg.SocketAddress)
+	require.Equal(t, "/tmp/alt.sock", cfg.SocketAddress)
 }

@@ -60,8 +60,8 @@ func Load() (*Config, error) {
 	}
 
 	// Override with loaded values
-	if err := k.Unmarshal("", cfg); err != nil {
-		return nil, err
+	if uErr := k.Unmarshal("", cfg); uErr != nil {
+		return nil, uErr
 	}
 
 	// If still default, check for env vars directly as fallback

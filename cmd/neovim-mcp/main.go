@@ -29,18 +29,18 @@ func run() error {
 
 	// Initialize logger
 	logLevel := logger.ParseLevel(cfg.Log.Level)
-	if err := logger.Init(logger.Config{
+	if lErr := logger.Init(logger.Config{
 		Level:    logLevel,
 		FilePath: cfg.Log.FilePath,
 		Disabled: cfg.Log.Disabled,
-	}); err != nil {
-		return fmt.Errorf("failed to initialize logger: %w", err)
+	}); lErr != nil {
+		return fmt.Errorf("failed to initialize logger: %w", lErr)
 	}
 
 	defer func() {
-		err := logger.Close()
-		if err != nil {
-			panic(err.Error())
+		dErr := logger.Close()
+		if dErr != nil {
+			panic(dErr.Error())
 		}
 	}()
 
@@ -58,10 +58,10 @@ func run() error {
 	}
 
 	defer func() {
-		err := nvimClient.Close()
-		if err != nil {
-			logger.Error("Failed to close neovim client", "error", err)
-			panic(err.Error())
+		cErr := nvimClient.Close()
+		if cErr != nil {
+			logger.Error("Failed to close neovim client", "error", cErr)
+			panic(cErr.Error())
 		}
 	}()
 
@@ -83,9 +83,9 @@ func run() error {
 	transport := &mcp.StdioTransport{}
 
 	logger.Info("Starting MCP server on stdio")
-	if err := server.Run(ctx, transport); err != nil {
-		logger.Error("Server error", "error", err)
-		return fmt.Errorf("server error: %w", err)
+	if rErr := server.Run(ctx, transport); rErr != nil {
+		logger.Error("Server error", "error", rErr)
+		return fmt.Errorf("server error: %w", rErr)
 	}
 
 	return nil
