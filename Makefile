@@ -1,4 +1,4 @@
-.PHONY: help build clean test test-unit test-integration fmt lint vet run install dev
+.PHONY: help build clean test test-unit test-integration fmt lint vet run install install-deps dev
 
 # Variables
 BINARY_NAME=neovim-mcp
@@ -41,27 +41,64 @@ clean: ## Remove built binaries and test cache
 # Test targets
 test: ## Run all tests (unit + integration)
 	@echo "Running all tests..."
-	$(GO) test -tags=integration -v -race -coverprofile=coverage.out ./...
+	@gotestsum --format testdox --format-icons hivis -- -tags=integration -race -coverprofile=coverage.out ./...
+	@echo ""
+	@echo "Coverage Summary (lowest coverage first):"
+	@go tool cover -func=coverage.out | grep -v "^mode:" | sort -t: -k2 -n | head -20
+	@echo ""
+	@go tool cover -func=coverage.out | tail -1
 
 test-unit: ## Run unit tests only (fast)
 	@echo "Running unit tests..."
-	$(GO) test -v -race -coverprofile=coverage.out ./internal/... ./cmd/...
+	@gotestsum --format testdox --format-icons hivis -- -race -coverprofile=coverage.out ./internal/... ./cmd/...
+	@echo ""
+	@echo "Coverage Summary (lowest coverage first):"
+	@go tool cover -func=coverage.out | grep -v "^mode:" | sort -t: -k2 -n | head -20
+	@echo ""
+	@go tool cover -func=coverage.out | tail -1
 
 test-integration: ## Run integration tests with Docker containers (default)
 	@echo "Running integration tests with containers..."
 	@echo "Note: Requires Docker to be running"
-	$(GO) test -tags=integration -v -race -coverprofile=coverage.out ./test/integration/...
+	@echo "Tip: Set NEOVIM_TEST_VERBOSE=1 to show container logs"
+	@if [ "$$NEOVIM_TEST_VERBOSE" = "1" ]; then \
+		gotestsum --format standard-verbose --format-icons hivis -- -tags=integration -race -coverprofile=coverage.out ./test/integration/...; \
+	else \
+		gotestsum --format testdox --format-icons hivis -- -tags=integration -race -coverprofile=coverage.out ./test/integration/...; \
+	fi
+	@echo ""
+	@echo "Coverage Summary (lowest coverage first):"
+	@go tool cover -func=coverage.out | grep -v "^mode:" | sort -t: -k2 -n | head -20
+	@echo ""
+	@go tool cover -func=coverage.out | tail -1
 
 test-integration-local: ## Run integration tests with local Neovim
 	@echo "Running integration tests with local Neovim..."
 	@echo "Note: Requires Neovim to be installed"
-	NEOVIM_TEST_LOCAL=1 $(GO) test -tags=integration -v -race -coverprofile=coverage.out ./test/integration/...
+	@echo "Tip: Set NEOVIM_TEST_VERBOSE=1 to show detailed test output"
+	@if [ "$$NEOVIM_TEST_VERBOSE" = "1" ]; then \
+		NEOVIM_TEST_LOCAL=1 gotestsum --format standard-verbose --format-icons hivis -- -tags=integration -race -coverprofile=coverage.out ./test/integration/...; \
+	else \
+		NEOVIM_TEST_LOCAL=1 gotestsum --format testdox --format-icons hivis -- -tags=integration -race -coverprofile=coverage.out ./test/integration/...; \
+	fi
+	@echo ""
+	@echo "Coverage Summary (lowest coverage first):"
+	@go tool cover -func=coverage.out | grep -v "^mode:" | sort -t: -k2 -n | head -20
+	@echo ""
+	@go tool cover -func=coverage.out | tail -1
 
 test-coverage: ## Run tests with coverage report (HTML)
 	@echo "Running tests with coverage..."
-	$(GO) test -tags=integration -race -coverprofile=coverage.out -covermode=atomic ./...
-	$(GO) tool cover -html=coverage.out -o coverage.html
-	@echo "Coverage report generated: coverage.html"
+	@gotestsum --format testdox --format-icons hivis -- -tags=integration -race -coverprofile=coverage.out -covermode=atomic ./...
+	@echo ""
+	@echo "Detailed Coverage Summary (lowest coverage first):"
+	@go tool cover -func=coverage.out | grep -v "^mode:" | sort -t: -k2 -n | head -20
+	@echo ""
+	@echo "Total Coverage:"
+	@go tool cover -func=coverage.out | tail -1
+	@echo ""
+	@$(GO) tool cover -html=coverage.out -o coverage.html
+	@echo "HTML coverage report generated: coverage.html"
 
 benchmark: ## Run benchmarks
 	@echo "Running benchmarks..."
@@ -101,6 +138,23 @@ mod-verify: ## Verify Go modules
 	@echo "Verifying modules..."
 	$(GO) mod verify
 	@echo "Verify complete"
+
+install-deps: ## Install required development dependencies
+	@echo "Installing development dependencies..."
+	@echo ""
+	@echo "Installing gotestsum..."
+	@go install gotest.tools/gotestsum@latest
+	@echo "  ✓ gotestsum installed"
+	@echo ""
+	@echo "Installing golangci-lint (if not present)..."
+	@which golangci-lint > /dev/null || go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	@echo "  ✓ golangci-lint installed"
+	@echo ""
+	@echo "All dependencies installed successfully!"
+	@echo ""
+	@echo "Installed versions:"
+	@echo "  gotestsum:      $(shell gotestsum --version 2>/dev/null || echo 'installed')"
+	@echo "  golangci-lint:  $(shell golangci-lint --version 2>/dev/null | head -1 || echo 'installed')"
 
 # Development targets
 dev: ## Run in development mode (with auto-reload would require additional tools)

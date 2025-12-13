@@ -185,22 +185,69 @@ Always check tool response status and provide meaningful feedback to users.
 - Should only be used with trusted AI agents
 - Consider running Neovim with restricted permissions
 
+## Development
+
+### Setup
+
+Install required development dependencies:
+
+```bash
+make install-deps
+```
+
+This installs:
+- **gotestsum** - Pretty test output formatter with testdox format
+- **golangci-lint** - Go linter for code quality
+
+Or install manually:
+```bash
+go install gotest.tools/gotestsum@latest
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+```
+
 ## Testing
+
+This project uses [gotestsum](https://github.com/gotesttools/gotestsum) for enhanced test output with the testdox format.
+
+### Test Commands
+
+```bash
+make test                    # All tests (unit + integration with Docker)
+make test-unit              # Unit tests only (fast, no Docker required)
+make test-integration       # Integration tests with Docker containers
+make test-integration-local # Integration tests with local Neovim
+make test-coverage          # Tests with HTML coverage report
+```
+
+### Test Output Features
+
+- ✅ **Testdox format** - BDD-style readable test descriptions
+- 🎨 **Colored output** - Green (pass), red (fail), yellow (skip)
+- 📊 **Coverage summaries** - Shows lowest-coverage files to identify areas needing tests
+- 🔍 **Full stack traces** - Detailed failure information
+- 📈 **Progress indicators** - Real-time test execution status
+
+### Example Output
+
+```
+internal/nvim
+  ✅ Connect to neovim
+  ✅ Get buffers returns all buffers
+  ✅ Get current buffer returns active buffer
+  ❌ Close buffer handles invalid buffer id
+
+Coverage Summary (lowest coverage first):
+internal/nvim/errors.go:                               45.2%
+internal/mcp/tools/window/resize_window.go:            58.7%
+...
+total:                                                 (statements) 71.9%
+
+DONE 156 tests in 8.688s
+```
 
 ### Integration Tests
 
 The project uses testcontainers for isolated, reproducible integration testing:
-
-```bash
-# Run integration tests with Docker containers (default)
-make test-integration
-
-# Run integration tests with local Neovim (faster for development)
-make test-integration-local
-
-# Run all tests (unit + integration)
-make test
-```
 
 **Requirements:**
 - **Container mode** (default): Docker must be running
@@ -212,13 +259,40 @@ The containerized tests provide:
 - No need to install Neovim locally
 - Automatic cleanup after tests
 
-Use `NEOVIM_TEST_LOCAL=1` environment variable to use local Neovim instead of containers.
+**Verbose output:**
 
-### Unit Tests
+Enable verbose logging to see Docker build output and container logs:
 
 ```bash
-# Run unit tests only (no Docker required)
-make test-unit
+# Show container logs during integration tests
+NEOVIM_TEST_VERBOSE=1 make test-integration
+
+# Or set it in your environment
+export NEOVIM_TEST_VERBOSE=1
+make test-integration
+```
+
+Verbose mode shows:
+- **Testcontainers lifecycle logs** with structured logging (time, level, message)
+  - 🐳 Building, ✅ Created, 🔔 Ready, 🐳 Stopping, 🚫 Terminated, etc.
+- **Docker image build output** (Step 1/3, Step 2/3, Successfully built, etc.)
+- **Neovim container stdout/stderr** during test execution
+- **Standard Go test format** (instead of testdox)
+- Useful for debugging container or test issues
+
+Note: Verbose mode uses `gotestsum --format standard-verbose` to display all test output. Container lifecycle logs use structured logging (slog) with timestamps for easier debugging.
+
+**Local integration testing:**
+
+```bash
+# Terminal 1: Start Neovim with RPC socket
+nvim --listen /tmp/nvim.sock
+
+# Terminal 2: Run tests against local Neovim
+make test-integration-local
+
+# With verbose output
+NEOVIM_TEST_VERBOSE=1 make test-integration-local
 ```
 
 ## Development Status

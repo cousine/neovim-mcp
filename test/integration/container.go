@@ -6,11 +6,14 @@ package integration
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
+	testlog "github.com/testcontainers/testcontainers-go/log"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
@@ -19,6 +22,31 @@ const (
 	neovimPort       = "6666"
 	containerTimeout = 30
 )
+
+// isVerbose checks if verbose logging is enabled for testcontainers
+func isVerbose() bool {
+	return os.Getenv("NEOVIM_TEST_VERBOSE") == "1"
+}
+
+// stdoutLogger is a logger that writes to stdout for test capture using slog
+type stdoutLogger struct {
+	logger *slog.Logger
+}
+
+func newStdoutLogger() testlog.Logger {
+	// Create a text handler that writes to stdout without source location
+	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	})
+	return &stdoutLogger{
+		logger: slog.New(handler),
+	}
+}
+
+func (l *stdoutLogger) Printf(format string, v ...any) {
+	// Use slog's Info method with the formatted message
+	l.logger.Info(fmt.Sprintf(format, v...))
+}
 
 // NeovimContainer wraps a testcontainers.Container with Neovim-specific functionality
 type NeovimContainer struct {
@@ -32,20 +60,6 @@ type Option func(*containerConfig)
 type containerConfig struct {
 	image   string
 	version string
-}
-
-// WithImage sets a custom Neovim Docker image
-func WithImage(image string) Option {
-	return func(c *containerConfig) {
-		c.image = image
-	}
-}
-
-// WithVersion sets the Neovim version tag
-func WithVersion(version string) Option {
-	return func(c *containerConfig) {
-		c.version = version
-	}
 }
 
 // StartNeovim starts a Neovim container for testing
@@ -68,10 +82,11 @@ func StartNeovim(ctx context.Context, opts ...Option) (*NeovimContainer, error) 
 	// Container request - build from Dockerfile if using default, otherwise use image
 	req := testcontainers.ContainerRequest{
 		FromDockerfile: testcontainers.FromDockerfile{
-			Context:    filepath.Join("..", ".."),
-			Dockerfile: "test/Dockerfile.neovim",
-			Tag:        "neovim-test",
-			KeepImage:  true,
+			Context:       filepath.Join("..", ".."),
+			Dockerfile:    "test/Dockerfile.neovim",
+			Tag:           "neovim-test",
+			KeepImage:     true,
+			PrintBuildLog: isVerbose(),
 		},
 		ExposedPorts: []string{neovimRPCPort},
 		Cmd:          cmd,
@@ -88,6 +103,21 @@ func StartNeovim(ctx context.Context, opts ...Option) (*NeovimContainer, error) 
 
 		req.FromDockerfile = testcontainers.FromDockerfile{}
 		req.Image = image
+	}
+
+	// Add log consumer and lifecycle hooks if verbose mode is enabled
+	if isVerbose() {
+		req.LogConsumerCfg = &testcontainers.LogConsumerConfig{
+			Consumers: []testcontainers.LogConsumer{
+				&testcontainers.StdoutLogConsumer{},
+			},
+		}
+
+		// Add lifecycle hooks with stdout logger for testcontainers logs
+		logger := newStdoutLogger()
+		req.LifecycleHooks = []testcontainers.ContainerLifecycleHooks{
+			testcontainers.DefaultLoggingHook(logger),
+		}
 	}
 
 	// Start container
