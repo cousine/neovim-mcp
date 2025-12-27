@@ -4,26 +4,36 @@ import (
 	"context"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+
+	mcpserver "neovim-mcp/internal/mcp"
 )
 
+// ExecLuaInput dto for exec lua in neovim request
 type ExecLuaInput struct {
-	Code string        `json:"code" jsonschema:"Lua code to execute"`
-	Args []interface{} `json:"args,omitempty" jsonschema:"optional arguments to pass to Lua code"`
+	Code string `json:"code" jsonschema:"Lua code to execute"`
+	Args []any  `json:"args,omitempty" jsonschema:"optional arguments to pass to Lua code"`
 }
 
+// ExecLuaOutput dto for exec lua in neovim response
 type ExecLuaOutput struct {
-	Result interface{} `json:"result" jsonschema:"Lua execution result"`
+	Result any `json:"result" jsonschema:"Lua execution result"`
 }
 
-func ExecLuaHandler(
-	ctx context.Context,
-	req *mcp.CallToolRequest,
-	input ExecLuaInput,
-) (*mcp.CallToolResult, ExecLuaOutput, error) {
-	// TODO: Implement
-	return nil, ExecLuaOutput{}, nil
+// ExecLuaHandler handles execuing lua in neovim
+func ExecLuaHandler(ctx context.Context, req *mcp.CallToolRequest, input ExecLuaInput) (*mcp.CallToolResult, ExecLuaOutput, error) {
+	nvimClient := mcpserver.GetNvimClient(req)
+
+	result, err := nvimClient.ExecLua(ctx, input.Code, input.Args)
+	if err != nil {
+		return nil, ExecLuaOutput{}, err
+	}
+
+	return nil, ExecLuaOutput{
+		Result: result,
+	}, nil
 }
 
+// RegisterExecLuaTool registers the exec lua tool
 func RegisterExecLuaTool(server *mcp.Server) {
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "exec_lua",
