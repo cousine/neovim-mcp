@@ -48,11 +48,11 @@ type NeovimClient interface {
 // BufferInfo contains information about a Neovim buffer
 type BufferInfo struct {
 	Handle    nvim.Buffer `json:"handle"`
-	Title     string      `json:"title"`
-	Name      string      `json:"name"`
-	Loaded    bool        `json:"loaded"`
-	Changed   bool        `json:"changed"`
-	LineCount int         `json:"line_count"`
+	Title     string      `json:"title" jsonschema:"buffer title or filename"`
+	Name      string      `json:"name" jsonschema:"full path to the file"`
+	Loaded    bool        `json:"loaded" jsonschema:"whether buffer content is loaded"`
+	Changed   bool        `json:"changed" jsonschema:"whether buffer has unsaved changes"`
+	LineCount int         `json:"line_count" jsonschema:"number of lines in the buffer"`
 }
 
 // CursorPosition represents a cursor position in a buffer (1-based)
