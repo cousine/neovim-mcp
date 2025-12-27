@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"neovim-mcp/internal/nvim"
+	"github.com/cousine/neovim-mcp/internal/nvim"
 )
 
 const testSocketPath = "/tmp/nvim-test.sock"

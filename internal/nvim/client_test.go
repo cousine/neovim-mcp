@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"neovim-mcp/internal/types"
+	"github.com/cousine/neovim-mcp/internal/types"
 )
 
 // testSocketPath returns a unique socket path for each test

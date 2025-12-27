@@ -3,9 +3,9 @@ package buffer
 import (
 	"context"
 
-	"neovim-mcp/internal/logger"
-	mcpserver "neovim-mcp/internal/mcp"
-	"neovim-mcp/internal/types"
+	"github.com/cousine/neovim-mcp/internal/logger"
+	mcpserver "github.com/cousine/neovim-mcp/internal/mcp"
+	"github.com/cousine/neovim-mcp/internal/types"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )

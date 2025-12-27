@@ -6,7 +6,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	mcpserver "neovim-mcp/internal/mcp"
+	mcpserver "github.com/cousine/neovim-mcp/internal/mcp"
 )
 
 // CallFunctionInput dto for calling a neovim function request

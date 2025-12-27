@@ -16,8 +16,8 @@ import (
 
 	"github.com/neovim/go-client/nvim"
 
-	"neovim-mcp/internal/logger"
-	"neovim-mcp/internal/types"
+	"github.com/cousine/neovim-mcp/internal/logger"
+	"github.com/cousine/neovim-mcp/internal/types"
 )
 
 const (

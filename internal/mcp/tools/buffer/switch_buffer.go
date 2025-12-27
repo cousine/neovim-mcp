@@ -5,7 +5,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	mcpserver "neovim-mcp/internal/mcp"
+	mcpserver "github.com/cousine/neovim-mcp/internal/mcp"
 )
 
 // SwitchBufferInput dto for switching a neovim buffer request

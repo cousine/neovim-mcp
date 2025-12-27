@@ -4,8 +4,8 @@ package mcp
 import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"neovim-mcp/internal/logger"
-	"neovim-mcp/internal/types"
+	"github.com/cousine/neovim-mcp/internal/logger"
+	"github.com/cousine/neovim-mcp/internal/types"
 )
 
 // serverContext holds the nvim client for tool handlers
@@ -24,7 +24,7 @@ func NewServer(nvimClient types.NeovimClient) *mcp.Server {
 	}
 
 	return mcp.NewServer(&mcp.Implementation{
-		Name:    "neovim-mcp",
+		Name:    "github.com/cousine/neovim-mcp",
 		Version: "v0.1.0",
 	}, opts)
 }

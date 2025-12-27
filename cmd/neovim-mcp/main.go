@@ -6,12 +6,12 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"neovim-mcp/internal/config"
-	"neovim-mcp/internal/logger"
-	mcpserver "neovim-mcp/internal/mcp"
-	"neovim-mcp/internal/mcp/resources"
-	"neovim-mcp/internal/mcp/tools"
-	"neovim-mcp/internal/nvim"
+	"github.com/cousine/neovim-mcp/internal/config"
+	"github.com/cousine/neovim-mcp/internal/logger"
+	mcpserver "github.com/cousine/neovim-mcp/internal/mcp"
+	"github.com/cousine/neovim-mcp/internal/mcp/resources"
+	"github.com/cousine/neovim-mcp/internal/mcp/tools"
+	"github.com/cousine/neovim-mcp/internal/nvim"
 )
 
 func main() {

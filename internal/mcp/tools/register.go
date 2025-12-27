@@ -4,11 +4,11 @@ package tools
 import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"neovim-mcp/internal/mcp/tools/buffer"
-	"neovim-mcp/internal/mcp/tools/command"
-	"neovim-mcp/internal/mcp/tools/cursor"
-	"neovim-mcp/internal/mcp/tools/text"
-	"neovim-mcp/internal/mcp/tools/window"
+	"github.com/cousine/neovim-mcp/internal/mcp/tools/buffer"
+	"github.com/cousine/neovim-mcp/internal/mcp/tools/command"
+	"github.com/cousine/neovim-mcp/internal/mcp/tools/cursor"
+	"github.com/cousine/neovim-mcp/internal/mcp/tools/text"
+	"github.com/cousine/neovim-mcp/internal/mcp/tools/window"
 )
 
 // RegisterAllTools registers all MCP tools with the server

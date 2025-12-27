@@ -5,8 +5,8 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	mcpserver "neovim-mcp/internal/mcp"
-	"neovim-mcp/internal/types"
+	mcpserver "github.com/cousine/neovim-mcp/internal/mcp"
+	"github.com/cousine/neovim-mcp/internal/types"
 )
 
 // GetBuffersInput defines the input (no parameters needed)

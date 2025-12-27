@@ -1,4 +1,4 @@
-module neovim-mcp
+module github.com/cousine/neovim-mcp
 
 go 1.25.5
 

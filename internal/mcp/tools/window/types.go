@@ -1,6 +1,6 @@
 package window
 
-import "neovim-mcp/internal/types"
+import "github.com/cousine/neovim-mcp/internal/types"
 
 // WindowInfo contains information about a window
 type WindowInfo struct {
