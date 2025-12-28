@@ -4,32 +4,37 @@ import (
 	"context"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+
+	mcpserver "github.com/cousine/neovim-mcp/internal/mcp"
+	"github.com/cousine/neovim-mcp/internal/types"
 )
 
+// SearchInput dto for search in neovim request
 type SearchInput struct {
 	Pattern string `json:"pattern" jsonschema:"search pattern (Vim regex)"`
 	Flags   string `json:"flags,omitempty" jsonschema:"search flags: 'w' for wrap, 'b' for backward"`
 }
 
+// SearchOutput dto for search in neovim response
 type SearchOutput struct {
-	Matches []SearchMatch `json:"matches" jsonschema:"array of search matches"`
+	Matches []types.SearchResult `json:"matches" jsonschema:"array of search matches"`
 }
 
-type SearchMatch struct {
-	Line      int    `json:"line" jsonschema:"line number where match was found"`
-	Column    int    `json:"column" jsonschema:"column number of match start"`
-	MatchText string `json:"match_text" jsonschema:"the matched text"`
+// SearchHandler handles search in neovim
+func SearchHandler(ctx context.Context, req *mcp.CallToolRequest, input SearchInput) (*mcp.CallToolResult, SearchOutput, error) {
+	nvimClient := mcpserver.GetNvimClient(req)
+
+	results, err := nvimClient.Search(ctx, input.Pattern, input.Flags)
+	if err != nil {
+		return nil, SearchOutput{}, err
+	}
+
+	return nil, SearchOutput{
+		Matches: results,
+	}, nil
 }
 
-func SearchHandler(
-	ctx context.Context,
-	req *mcp.CallToolRequest,
-	input SearchInput,
-) (*mcp.CallToolResult, SearchOutput, error) {
-	// TODO: Implement
-	return nil, SearchOutput{}, nil
-}
-
+// RegisterSearchTool registers the search tool
 func RegisterSearchTool(server *mcp.Server) {
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "search",

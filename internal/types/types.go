@@ -49,7 +49,7 @@ type NeovimClient interface {
 type BufferInfo struct {
 	Handle    nvim.Buffer `json:"handle"`
 	Title     string      `json:"title" jsonschema:"buffer title or filename"`
-	Name      string      `json:"name" jsonschema:"full path to the file"`
+	Path      string      `json:"name" jsonschema:"full path to the file"`
 	Loaded    bool        `json:"loaded" jsonschema:"whether buffer content is loaded"`
 	Changed   bool        `json:"changed" jsonschema:"whether buffer has unsaved changes"`
 	LineCount int         `json:"line_count" jsonschema:"number of lines in the buffer"`
@@ -63,17 +63,17 @@ type CursorPosition struct {
 
 // SearchResult represents a search match
 type SearchResult struct {
-	Line      int    `json:"line"`
-	Column    int    `json:"column"`
-	MatchText string `json:"match_text"`
+	Line      int    `json:"line" jsonschema:"line number where match was found"`
+	Column    int    `json:"column" jsonschema:"column number of match start"`
+	MatchText string `json:"match_text" jsonschema:"the matched text"`
 }
 
 // WindowInfo contains information about a Neovim window
 type WindowInfo struct {
-	Handle nvim.Window `json:"handle"`
-	Buffer BufferInfo  `json:"buffer"`
-	Width  int         `json:"width"`
-	Height int         `json:"height"`
+	Handle nvim.Window `json:"handle" jsonschema:"window handle/ID"`
+	Buffer BufferInfo  `json:"buffer" jsonschema:"buffer displayed in this window"`
+	Width  int         `json:"width" jsonschema:"window width in columns"`
+	Height int         `json:"height" jsonschema:"window height in rows"`
 	Row    int         `json:"row"`
 	Col    int         `json:"col"`
 }

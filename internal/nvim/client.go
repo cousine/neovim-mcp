@@ -550,7 +550,7 @@ func (c *Client) getBufferInfo(buf nvim.Buffer) (types.BufferInfo, error) {
 	return types.BufferInfo{
 		Handle:    buf,
 		Title:     title,
-		Name:      name,
+		Path:      name,
 		Loaded:    loaded,
 		Changed:   changed,
 		LineCount: lineCount,

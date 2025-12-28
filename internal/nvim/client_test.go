@@ -148,7 +148,7 @@ func TestClient_GetBuffers(t *testing.T) {
 		require.NoError(t, err)
 		found := false
 		for _, buf := range buffers {
-			if buf.Name == resolvedTmpFile {
+			if buf.Path == resolvedTmpFile {
 				found = true
 				break
 			}
@@ -180,7 +180,7 @@ func TestClient_GetCurrentBuffer(t *testing.T) {
 		buffer, err := client.GetCurrentBuffer(ctx)
 
 		require.NoError(t, err)
-		assert.Equal(t, resolvedTmpFile, buffer.Name)
+		assert.Equal(t, resolvedTmpFile, buffer.Path)
 		assert.Equal(t, filepath.Base(tmpFile), buffer.Title)
 	})
 }
@@ -235,7 +235,7 @@ func TestClient_OpenBuffer(t *testing.T) {
 		buffer, err := client.OpenBuffer(ctx, tmpFile)
 
 		require.NoError(t, err)
-		assert.Equal(t, resolvedTmpFile, buffer.Name)
+		assert.Equal(t, resolvedTmpFile, buffer.Path)
 		assert.Equal(t, 3, buffer.LineCount)
 	})
 
@@ -247,7 +247,7 @@ func TestClient_OpenBuffer(t *testing.T) {
 		buffer, err := client.OpenBuffer(ctx, newFile)
 
 		require.NoError(t, err)
-		assert.Equal(t, newFile, buffer.Name)
+		assert.Equal(t, newFile, buffer.Path)
 	})
 }
 
@@ -303,7 +303,7 @@ func TestClient_SwitchBuffer(t *testing.T) {
 		// Current should be tmpFile2
 		current, err := client.GetCurrentBuffer(ctx)
 		require.NoError(t, err)
-		assert.Equal(t, resolvedTmpFile2, current.Name)
+		assert.Equal(t, resolvedTmpFile2, current.Path)
 
 		// Switch to tmpFile1
 		err = client.SwitchBuffer(ctx, filepath.Base(tmpFile1))
@@ -312,7 +312,7 @@ func TestClient_SwitchBuffer(t *testing.T) {
 		// Verify switch
 		current, err = client.GetCurrentBuffer(ctx)
 		require.NoError(t, err)
-		assert.Equal(t, resolvedTmpFile1, current.Name)
+		assert.Equal(t, resolvedTmpFile1, current.Path)
 	})
 
 	t.Run("returns error for non-existent buffer", func(t *testing.T) {
@@ -580,7 +580,7 @@ func TestClient_SplitWindow(t *testing.T) {
 		window, err := client.SplitWindow(ctx, SplitDirectionHorizontal, tmpFile)
 
 		require.NoError(t, err)
-		assert.Equal(t, resolvedTmpFile, window.Buffer.Name)
+		assert.Equal(t, resolvedTmpFile, window.Buffer.Path)
 	})
 }
 
@@ -1172,7 +1172,7 @@ func MockBufferInfo(handle int, title, name string) types.BufferInfo {
 	return types.BufferInfo{
 		Handle:    nvim.Buffer(handle),
 		Title:     title,
-		Name:      name,
+		Path:      name,
 		Loaded:    true,
 		Changed:   false,
 		LineCount: 100,
