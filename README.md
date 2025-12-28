@@ -391,7 +391,9 @@ See [AGENTS.md](./AGENTS.md) for detailed development guidelines.
 
 ## License
 
-[Add your license here]
+MIT License - Copyright (c) 2025 Omar Mekky
+
+See [LICENSE](./LICENSE) for full details.
 
 ## Acknowledgments
 
