@@ -20,7 +20,7 @@ type GotoLineOutput struct {
 
 // GotoLineHandler handles go to line in neovim
 func GotoLineHandler(ctx context.Context, req *mcp.CallToolRequest, input GotoLineInput) (*mcp.CallToolResult, GotoLineOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	err := nvimClient.GotoLine(ctx, input.Line)
 	if err != nil {

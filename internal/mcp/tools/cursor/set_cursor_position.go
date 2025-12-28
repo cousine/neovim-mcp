@@ -21,7 +21,7 @@ type SetCursorPositionOutput struct {
 
 // SetCursorPositionHandler handles setting cursor position in neovim
 func SetCursorPositionHandler(ctx context.Context, req *mcp.CallToolRequest, input SetCursorPositionInput) (*mcp.CallToolResult, SetCursorPositionOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	err := nvimClient.SetCursorPosition(ctx, input.Line, input.Column)
 	if err != nil {

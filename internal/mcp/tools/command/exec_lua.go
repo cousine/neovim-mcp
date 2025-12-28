@@ -21,7 +21,7 @@ type ExecLuaOutput struct {
 
 // ExecLuaHandler handles execuing lua in neovim
 func ExecLuaHandler(ctx context.Context, req *mcp.CallToolRequest, input ExecLuaInput) (*mcp.CallToolResult, ExecLuaOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	result, err := nvimClient.ExecLua(ctx, input.Code, input.Args)
 	if err != nil {

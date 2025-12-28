@@ -22,7 +22,7 @@ type ResizeWindowOutput struct {
 
 // ResizeWindowHandler handles resize window
 func ResizeWindowHandler(ctx context.Context, req *mcp.CallToolRequest, input ResizeWindowInput) (*mcp.CallToolResult, ResizeWindowOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	err := nvimClient.ResizeWindow(ctx, input.WindowID, input.Width, input.Height)
 	if err != nil {

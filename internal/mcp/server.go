@@ -30,6 +30,6 @@ func NewServer(nvimClient types.NeovimClient) *mcp.Server {
 }
 
 // GetNvimClient extracts the Neovim client from the request
-func GetNvimClient(req *mcp.CallToolRequest) types.NeovimClient {
+func GetNvimClient() types.NeovimClient {
 	return serverContext.NvimClient
 }

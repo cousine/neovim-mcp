@@ -21,7 +21,7 @@ type GetCursorPositionOutput struct {
 
 // GetCursorPositionHandler handles getting neovim's cursor position
 func GetCursorPositionHandler(ctx context.Context, req *mcp.CallToolRequest, input GetCursorPositionInput) (*mcp.CallToolResult, GetCursorPositionOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	cursor, err := nvimClient.GetCursorPosition(ctx)
 	if err != nil {

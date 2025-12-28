@@ -20,7 +20,7 @@ type ExecCommandOutput struct {
 
 // ExecCommandHandler handles executing a neovim command
 func ExecCommandHandler(ctx context.Context, req *mcp.CallToolRequest, input ExecCommandInput) (*mcp.CallToolResult, ExecCommandOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	result, err := nvimClient.ExecCommand(ctx, input.Command)
 	if err != nil {

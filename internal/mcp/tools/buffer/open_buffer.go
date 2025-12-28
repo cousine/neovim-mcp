@@ -21,7 +21,7 @@ type OpenBufferOutput struct {
 
 // OpenBufferHandler handles opening a neovim buffer
 func OpenBufferHandler(ctx context.Context, req *mcp.CallToolRequest, input OpenBufferInput) (*mcp.CallToolResult, OpenBufferOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	bufInfo, err := nvimClient.OpenBuffer(ctx, input.Path)
 	if err != nil {

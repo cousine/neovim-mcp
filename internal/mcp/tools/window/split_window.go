@@ -22,7 +22,7 @@ type SplitWindowOutput struct {
 
 // SplitWindowHandler handles split window
 func SplitWindowHandler(ctx context.Context, req *mcp.CallToolRequest, input SplitWindowInput) (*mcp.CallToolResult, SplitWindowOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	wInfo, err := nvimClient.SplitWindow(ctx, input.Direction, input.BufferTitle)
 	if err != nil {

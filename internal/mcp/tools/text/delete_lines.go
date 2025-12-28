@@ -23,7 +23,7 @@ type DeleteLinesOutput struct {
 
 // DeleteLinesHandler handles delete lines
 func DeleteLinesHandler(ctx context.Context, req *mcp.CallToolRequest, input DeleteLinesInput) (*mcp.CallToolResult, DeleteLinesOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	err := nvimClient.DeleteLines(ctx, input.BufferTitle, input.StartLine, input.EndLine)
 	if err != nil {

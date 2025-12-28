@@ -20,7 +20,7 @@ type GetCurrentBufferOutput struct {
 
 // GetCurrentBufferHandler handles get current buffer mcp tool request
 func GetCurrentBufferHandler(ctx context.Context, req *mcp.CallToolRequest, input GetCurrentBufferInput) (*mcp.CallToolResult, GetCurrentBufferOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	bufInfo, err := nvimClient.GetCurrentBuffer(ctx)
 	if err != nil {

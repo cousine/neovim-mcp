@@ -20,7 +20,7 @@ type InsertTextOutput struct {
 
 // InsertTextHandler handles inserting text in neovim
 func InsertTextHandler(ctx context.Context, req *mcp.CallToolRequest, input InsertTextInput) (*mcp.CallToolResult, InsertTextOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	err := nvimClient.InsertText(ctx, input.Text)
 	if err != nil {

@@ -22,7 +22,7 @@ type GetBufferLinesOutput struct {
 
 // GetBufferLinesHandler handles get buffer lines
 func GetBufferLinesHandler(ctx context.Context, req *mcp.CallToolRequest, input GetBufferLinesInput) (*mcp.CallToolResult, GetBufferLinesOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	lines, err := nvimClient.GetBufferLines(ctx, input.BufferTitle, input.StartLine, input.EndLine)
 	if err != nil {

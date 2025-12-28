@@ -21,7 +21,7 @@ type CloseWindowOutput struct {
 
 // CloseWindowHandler handles close window
 func CloseWindowHandler(ctx context.Context, req *mcp.CallToolRequest, input CloseWindowInput) (*mcp.CallToolResult, CloseWindowOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	err := nvimClient.CloseWindow(ctx, input.WindowID)
 	if err != nil {

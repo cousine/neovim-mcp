@@ -22,7 +22,7 @@ type CloseBufferOutput struct {
 
 // CloseBufferHandler handles closing a neovim buffer
 func CloseBufferHandler(ctx context.Context, req *mcp.CallToolRequest, input CloseBufferInput) (*mcp.CallToolResult, CloseBufferOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	err := nvimClient.CloseBuffer(ctx, input.Title)
 	if err != nil {

@@ -47,7 +47,7 @@ type NeovimClient interface {
 
 // BufferInfo contains information about a Neovim buffer
 type BufferInfo struct {
-	Handle    nvim.Buffer `json:"handle"`
+	Handle    nvim.Buffer `json:"handle" jsonschema:"buffer handle/ID"`
 	Title     string      `json:"title" jsonschema:"buffer title or filename"`
 	Path      string      `json:"name" jsonschema:"full path to the file"`
 	Loaded    bool        `json:"loaded" jsonschema:"whether buffer content is loaded"`
@@ -57,8 +57,8 @@ type BufferInfo struct {
 
 // CursorPosition represents a cursor position in a buffer (1-based)
 type CursorPosition struct {
-	Line   int `json:"line"`
-	Column int `json:"column"`
+	Line   int `json:"line" jsonschema:"cursor line number"`
+	Column int `json:"column" jsonschema:"cursor column number"`
 }
 
 // SearchResult represents a search match
@@ -74,8 +74,6 @@ type WindowInfo struct {
 	Buffer BufferInfo  `json:"buffer" jsonschema:"buffer displayed in this window"`
 	Width  int         `json:"width" jsonschema:"window width in columns"`
 	Height int         `json:"height" jsonschema:"window height in rows"`
-	Row    int         `json:"row"`
-	Col    int         `json:"col"`
 }
 
 // ServerMeta holds server-level metadata passed to tool handlers

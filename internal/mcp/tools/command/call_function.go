@@ -22,7 +22,7 @@ type CallFunctionOutput struct {
 
 // CallFunctionHandler handles calling a neovim function
 func CallFunctionHandler(ctx context.Context, req *mcp.CallToolRequest, input CallFunctionInput) (*mcp.CallToolResult, CallFunctionOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	result, err := nvimClient.CallFunction(ctx, input.FunctionName, input.Args)
 	if err != nil {

@@ -23,7 +23,7 @@ func GetBuffersHandler(
 	req *mcp.CallToolRequest,
 	input GetBuffersInput,
 ) (*mcp.CallToolResult, GetBuffersOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	buffers, err := nvimClient.GetBuffers(ctx)
 	if err != nil {

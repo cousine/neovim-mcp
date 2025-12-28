@@ -20,7 +20,7 @@ type SwitchBufferOutput struct {
 
 // SwitchBufferHandler handles switching a neovim buffer
 func SwitchBufferHandler(ctx context.Context, req *mcp.CallToolRequest, input SwitchBufferInput) (*mcp.CallToolResult, SwitchBufferOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	err := nvimClient.SwitchBuffer(ctx, input.Title)
 	if err != nil {

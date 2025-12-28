@@ -22,7 +22,7 @@ type SearchOutput struct {
 
 // SearchHandler handles search in neovim
 func SearchHandler(ctx context.Context, req *mcp.CallToolRequest, input SearchInput) (*mcp.CallToolResult, SearchOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	results, err := nvimClient.Search(ctx, input.Pattern, input.Flags)
 	if err != nil {

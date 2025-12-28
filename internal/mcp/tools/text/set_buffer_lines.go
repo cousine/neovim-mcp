@@ -23,7 +23,7 @@ type SetBufferLinesOutput struct {
 
 // SetBufferLinesHandler handles set buffer lines
 func SetBufferLinesHandler(ctx context.Context, req *mcp.CallToolRequest, input SetBufferLinesInput) (*mcp.CallToolResult, SetBufferLinesOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	err := nvimClient.SetBufferLines(ctx, input.BufferTitle, input.StartLine, input.EndLine, input.Lines)
 	if err != nil {

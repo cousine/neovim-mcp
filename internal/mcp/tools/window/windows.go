@@ -19,7 +19,7 @@ type GetWindowsOutput struct {
 
 // GetWindowsHandler handles get windows
 func GetWindowsHandler(ctx context.Context, req *mcp.CallToolRequest, input GetWindowsInput) (*mcp.CallToolResult, GetWindowsOutput, error) {
-	nvimClient := mcpserver.GetNvimClient(req)
+	nvimClient := mcpserver.GetNvimClient()
 
 	windows, err := nvimClient.GetWindows(ctx)
 	if err != nil {
