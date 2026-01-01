@@ -1,13 +1,16 @@
 # Neovim MCP Server
 
-Control your Neovim editor with AI assistants like Claude! This MCP (Model
-Context Protocol) server lets AI agents read, edit, and navigate files
-directly in your Neovim instance.
+Control your Neovim editor with AI assistants! This MCP (Model Context
+Protocol) server lets AI agents read, edit, and navigate files directly in your
+Neovim instance.
+
+**Compatible with**: Claude Code, OpenCode, Cursor, Gemini Code Assist, and any
+MCP-compatible AI client.
 
 ## What is this?
 
-Ever wanted Claude or another AI assistant to edit code directly in your
-Neovim editor? This server makes it possible! Your AI can:
+Ever wanted an AI assistant to edit code directly in your Neovim editor? This
+server makes it possible! Your AI can:
 
 - 📝 Read and edit files in open buffers
 - 🔍 Search and navigate your code
@@ -17,15 +20,53 @@ Neovim editor? This server makes it possible! Your AI can:
 
 All while you keep full control in your familiar Neovim environment!
 
+## Supported AI Clients
+
+This MCP server works with any client that supports the Model Context Protocol:
+
+- ✅ **Claude Code** - Anthropic's official CLI for Claude
+- ✅ **OpenCode** - Open source AI coding assistant
+- ✅ **Cursor** - AI-first code editor
+- ✅ **Gemini Code Assist** - Google's AI coding assistant
+- ✅ **Qwen Coder** - Alibaba's coding AI (via MCP-compatible clients)
+- ✅ **Any MCP-compatible client** - Standard MCP protocol support
+
 ## Quick Start
 
 ### 1. Install
 
-Download the latest release or build from source:
+#### Option A: Homebrew (macOS/Linux - Recommended)
+
+```bash
+brew tap cousine/tap
+brew install neovim-mcp
+```
+
+The binary will be installed and ready to use. Homebrew automatically handles
+macOS quarantine removal for unsigned binaries.
+
+#### Option B: Download Pre-built Binary
+
+Download the latest release for your platform from the
+[releases page](https://github.com/cousine/neovim-mcp/releases).
+
+**macOS users**: After downloading, you may need to remove the quarantine flag:
+
+```bash
+xattr -d com.apple.quarantine /path/to/neovim-mcp
+```
+
+Or allow it in: **System Preferences → Security & Privacy → General** → Click
+"Allow Anyway".
+
+**Note**: This binary is not signed or notarized by Apple. It's safe to use but
+requires this extra step for macOS security.
+
+#### Option C: Build from Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/neovim-mcp.git
+git clone https://github.com/cousine/neovim-mcp.git
 cd neovim-mcp
 
 # Build the server
@@ -33,6 +74,14 @@ make build
 
 # The binary will be at dist/neovim-mcp
 ```
+
+#### Verify Installation
+
+```bash
+neovim-mcp --version
+```
+
+You should see version information including build details.
 
 ### 2. Start Neovim with a Socket
 
@@ -54,21 +103,22 @@ Or add this to your `~/.config/nvim/init.lua`:
 vim.fn.serverstart("/tmp/nvim.sock")
 ```
 
-### 3. Configure Claude Desktop (or your MCP client)
+### 3. Configure Your AI Client
 
-Edit your Claude Desktop config file:
+Choose your AI client and follow the configuration instructions:
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
-**Linux**: `~/.config/Claude/claude_desktop_config.json`
+#### Claude Code
 
-Add this configuration:
+Edit your Claude Code config file:
+
+**macOS/Linux**: `~/.claude/claude_config.json`  
+**Windows**: `%USERPROFILE%\.claude\claude_config.json`
 
 ```json
 {
   "mcpServers": {
     "neovim": {
-      "command": "/full/path/to/neovim-mcp",
+      "command": "neovim-mcp",
       "env": {
         "NVIM_MCP_LISTEN_ADDRESS": "/tmp/nvim.sock"
       }
@@ -77,16 +127,133 @@ Add this configuration:
 }
 ```
 
-**Replace** `/full/path/to/neovim-mcp` with the actual path to the
-binary!
+**Notes:**
+- If installed via Homebrew, just use `"command": "neovim-mcp"` (it's in your PATH)
+- If downloaded manually, use the full path: `"/full/path/to/neovim-mcp"`
+- Find the path with: `which neovim-mcp`
 
-### 4. Restart Claude Desktop
+Restart Claude Code to load the new configuration.
 
-Restart Claude Desktop to load the new configuration.
+#### OpenCode
+
+Edit your OpenCode config file:
+
+**macOS/Linux**: `~/.opencode/config.json`  
+**Windows**: `%USERPROFILE%\.opencode\config.json`
+
+```json
+{
+  "mcpServers": {
+    "neovim": {
+      "command": "neovim-mcp",
+      "env": {
+        "NVIM_MCP_LISTEN_ADDRESS": "/tmp/nvim.sock"
+      }
+    }
+  }
+}
+```
+
+Restart OpenCode to load the new configuration.
+
+#### Cursor
+
+Cursor supports MCP through its settings:
+
+1. Open Cursor Settings (`Cmd+,` on macOS, `Ctrl+,` on Windows/Linux)
+2. Navigate to **Features** → **MCP Servers**
+3. Click **Add MCP Server**
+4. Configure:
+   - **Name**: `neovim`
+   - **Command**: `neovim-mcp` (or full path if not in PATH)
+   - **Environment Variables**:
+     - Key: `NVIM_MCP_LISTEN_ADDRESS`
+     - Value: `/tmp/nvim.sock`
+5. Save and restart Cursor
+
+Alternatively, edit `~/.cursor/mcp.json` directly:
+
+```json
+{
+  "mcpServers": {
+    "neovim": {
+      "command": "neovim-mcp",
+      "env": {
+        "NVIM_MCP_LISTEN_ADDRESS": "/tmp/nvim.sock"
+      }
+    }
+  }
+}
+```
+
+#### Gemini Code Assist
+
+For Google's Gemini Code Assist (in supported IDEs):
+
+1. Install the Gemini Code Assist plugin
+2. Open plugin settings
+3. Navigate to **MCP Configuration**
+4. Add server configuration:
+
+```json
+{
+  "neovim": {
+    "command": "neovim-mcp",
+    "env": {
+      "NVIM_MCP_LISTEN_ADDRESS": "/tmp/nvim.sock"
+    }
+  }
+}
+```
+
+5. Restart the IDE
+
+#### Qwen Coder
+
+For Qwen Coder (if using a compatible client):
+
+Edit the MCP configuration file (location varies by client):
+
+```json
+{
+  "mcpServers": {
+    "neovim": {
+      "command": "neovim-mcp",
+      "env": {
+        "NVIM_MCP_LISTEN_ADDRESS": "/tmp/nvim.sock"
+      }
+    }
+  }
+}
+```
+
+**Note**: Qwen Coder's MCP support may vary depending on the client implementation.
+Check the specific client's documentation for exact configuration steps.
+
+#### Generic MCP Client
+
+For any MCP-compatible client:
+
+```json
+{
+  "mcpServers": {
+    "neovim": {
+      "command": "neovim-mcp",
+      "env": {
+        "NVIM_MCP_LISTEN_ADDRESS": "/tmp/nvim.sock"
+      }
+    }
+  }
+}
+```
+
+### 4. Restart Your AI Client
+
+Restart your AI client (Claude Code, OpenCode, Cursor, etc.) to load the new configuration.
 
 ### 5. Try it out
 
-Open a conversation with Claude and try:
+Open a conversation with your AI assistant and try:
 
 > "List all the buffers open in my Neovim instance"
 >
@@ -134,22 +301,22 @@ Open a conversation with Claude and try:
 
 ### "Fix this bug for me"
 
-1. You tell Claude about a bug in your code
-2. Claude searches for the relevant function
+1. You tell your AI about a bug in your code
+2. AI searches for the relevant function
 3. Reads the code to understand the issue
 4. Makes the fix directly in your Neovim buffer
 5. You review and save (or ask for changes!)
 
 ### "Refactor this function"
 
-1. Claude reads your current function
+1. AI reads your current function
 2. Suggests improvements
 3. Rewrites it with better structure
 4. You see the changes live in Neovim
 
 ### "Add documentation to all functions"
 
-1. Claude scans through your file
+1. AI scans through your file
 2. Finds each function definition
 3. Adds proper JSDoc/Godoc comments
 4. You approve and save
@@ -189,7 +356,7 @@ nvim --listen /home/you/.nvim/mysocket.sock
 
 ## Troubleshooting
 
-### "Claude can't see my Neovim instance"
+### "AI assistant can't see my Neovim instance"
 
 **Check these things:**
 
@@ -200,10 +367,10 @@ nvim --listen /home/you/.nvim/mysocket.sock
    ls -la /tmp/nvim.sock
    ```
 
-2. ✅ Is the socket path in Claude's config the same?
-   - Check `NVIM_MCP_LISTEN_ADDRESS` in your `claude_desktop_config.json`
+2. ✅ Is the socket path in your AI client's config the same?
+   - Check `NVIM_MCP_LISTEN_ADDRESS` in your config file
 
-3. ✅ Did you restart Claude Desktop after changing the config?
+3. ✅ Did you restart Claude Code after changing the config?
 
 4. ✅ Is the path to `neovim-mcp` binary correct in the config?
 
@@ -220,6 +387,30 @@ The socket file needs read/write permissions. Check:
 ls -la /tmp/nvim.sock
 # Should show: srwx------ (socket with owner permissions)
 ```
+
+### macOS "damaged and can't be opened" or quarantine errors
+
+If you downloaded the binary manually (not via Homebrew), macOS may block it
+because it's not signed or notarized.
+
+**Quick fix:**
+
+```bash
+# Remove the quarantine flag
+xattr -d com.apple.quarantine /path/to/neovim-mcp
+
+# Or find where it's installed
+xattr -d com.apple.quarantine $(which neovim-mcp)
+```
+
+**Alternative:** Go to **System Preferences → Security & Privacy → General** and
+click **"Allow Anyway"** when prompted.
+
+**Why?** Code signing and notarization require an Apple Developer account
+($99/year). This project is open source and the binary is safe to use, but
+requires this manual approval step on macOS.
+
+**Homebrew users**: This is automatically handled during installation!
 
 ### Debugging and Logs
 
@@ -300,6 +491,12 @@ A: Just close Neovim or the socket connection. You can also use
 A: Yes! Use a Windows socket path like `\\.\pipe\nvim` and configure
 accordingly.
 
+**Q: Why isn't the binary signed/notarized for macOS?**
+A: Code signing requires an Apple Developer account ($99/year). This is an open
+source project and the binaries are safe to use. If installed via Homebrew, the
+quarantine flag is automatically removed. For manual downloads, see the
+troubleshooting section above.
+
 ## For Developers
 
 ### Requirements
@@ -355,13 +552,21 @@ We welcome contributions! Whether you're:
 
 Please open an issue or pull request on GitHub.
 
+## Installation Methods Summary
+
+| Method | Pros | Cons | Best For |
+|--------|------|------|----------|
+| **Homebrew** | ✅ Automatic updates<br>✅ No quarantine issues<br>✅ In PATH automatically | ⚠️ macOS/Linux only | Most users |
+| **Pre-built Binary** | ✅ Simple download<br>✅ All platforms | ⚠️ Manual updates<br>⚠️ Quarantine on macOS | Windows, quick testing |
+| **Build from Source** | ✅ Latest code<br>✅ Customizable | ⚠️ Requires Go toolchain<br>⚠️ Manual builds | Developers, contributors |
+
 ## Building from Source
 
 If you want to contribute or customize:
 
 ```bash
 # Clone the repo
-git clone https://github.com/yourusername/neovim-mcp.git
+git clone https://github.com/cousine/neovim-mcp.git
 cd neovim-mcp
 
 # Install development dependencies (gotestsum, golangci-lint)
@@ -383,11 +588,20 @@ See [AGENTS.md](./AGENTS.md) for detailed development guidelines.
 
 ## Learn More
 
+### About MCP and Neovim
+
 - **Model Context Protocol (MCP)**:
   [modelcontextprotocol.io](https://modelcontextprotocol.io)
 - **Neovim RPC Documentation**:
   [neovim.io/doc/user/api.html](https://neovim.io/doc/user/api.html)
-- **Claude Desktop**: [claude.ai](https://claude.ai)
+
+### AI Clients
+
+- **Claude Code**: [claude.ai/code](https://claude.ai/code)
+- **OpenCode**: [opencode.ai](https://opencode.ai)
+- **Cursor**: [cursor.com](https://cursor.com)
+- **Gemini Code Assist**: [Google Cloud](https://cloud.google.com/gemini/docs/codeassist)
+- **Qwen Coder**: [Alibaba Cloud](https://github.com/QwenLM/Qwen2.5-Coder)
 
 ## License
 
