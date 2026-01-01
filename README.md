@@ -21,11 +21,38 @@ All while you keep full control in your familiar Neovim environment!
 
 ### 1. Install
 
-Download the latest release or build from source:
+#### Option A: Homebrew (macOS/Linux - Recommended)
+
+```bash
+brew tap cousine/tap
+brew install neovim-mcp
+```
+
+The binary will be installed and ready to use. Homebrew automatically handles
+macOS quarantine removal for unsigned binaries.
+
+#### Option B: Download Pre-built Binary
+
+Download the latest release for your platform from the
+[releases page](https://github.com/cousine/neovim-mcp/releases).
+
+**macOS users**: After downloading, you may need to remove the quarantine flag:
+
+```bash
+xattr -d com.apple.quarantine /path/to/neovim-mcp
+```
+
+Or allow it in: **System Preferences → Security & Privacy → General** → Click
+"Allow Anyway".
+
+**Note**: This binary is not signed or notarized by Apple. It's safe to use but
+requires this extra step for macOS security.
+
+#### Option C: Build from Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/neovim-mcp.git
+git clone https://github.com/cousine/neovim-mcp.git
 cd neovim-mcp
 
 # Build the server
@@ -33,6 +60,14 @@ make build
 
 # The binary will be at dist/neovim-mcp
 ```
+
+#### Verify Installation
+
+```bash
+neovim-mcp --version
+```
+
+You should see version information including build details.
 
 ### 2. Start Neovim with a Socket
 
@@ -58,8 +93,8 @@ vim.fn.serverstart("/tmp/nvim.sock")
 
 Edit your Claude Desktop config file:
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**Windows**: `%APPDATA%/Claude/claude_desktop_config.json`  
 **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
 Add this configuration:
@@ -68,7 +103,7 @@ Add this configuration:
 {
   "mcpServers": {
     "neovim": {
-      "command": "/full/path/to/neovim-mcp",
+      "command": "neovim-mcp",
       "env": {
         "NVIM_MCP_LISTEN_ADDRESS": "/tmp/nvim.sock"
       }
@@ -77,8 +112,10 @@ Add this configuration:
 }
 ```
 
-**Replace** `/full/path/to/neovim-mcp` with the actual path to the
-binary!
+**Notes:**
+- If installed via Homebrew, just use `"command": "neovim-mcp"` (it's in your PATH)
+- If downloaded manually, use the full path: `"/full/path/to/neovim-mcp"`
+- Find the path with: `which neovim-mcp`
 
 ### 4. Restart Claude Desktop
 
@@ -221,6 +258,30 @@ ls -la /tmp/nvim.sock
 # Should show: srwx------ (socket with owner permissions)
 ```
 
+### macOS "damaged and can't be opened" or quarantine errors
+
+If you downloaded the binary manually (not via Homebrew), macOS may block it
+because it's not signed or notarized.
+
+**Quick fix:**
+
+```bash
+# Remove the quarantine flag
+xattr -d com.apple.quarantine /path/to/neovim-mcp
+
+# Or find where it's installed
+xattr -d com.apple.quarantine $(which neovim-mcp)
+```
+
+**Alternative:** Go to **System Preferences → Security & Privacy → General** and
+click **"Allow Anyway"** when prompted.
+
+**Why?** Code signing and notarization require an Apple Developer account
+($99/year). This project is open source and the binary is safe to use, but
+requires this manual approval step on macOS.
+
+**Homebrew users**: This is automatically handled during installation!
+
 ### Debugging and Logs
 
 To enable debug logging and save logs to a file:
@@ -300,6 +361,12 @@ A: Just close Neovim or the socket connection. You can also use
 A: Yes! Use a Windows socket path like `\\.\pipe\nvim` and configure
 accordingly.
 
+**Q: Why isn't the binary signed/notarized for macOS?**
+A: Code signing requires an Apple Developer account ($99/year). This is an open
+source project and the binaries are safe to use. If installed via Homebrew, the
+quarantine flag is automatically removed. For manual downloads, see the
+troubleshooting section above.
+
 ## For Developers
 
 ### Requirements
@@ -355,13 +422,21 @@ We welcome contributions! Whether you're:
 
 Please open an issue or pull request on GitHub.
 
+## Installation Methods Summary
+
+| Method | Pros | Cons | Best For |
+|--------|------|------|----------|
+| **Homebrew** | ✅ Automatic updates<br>✅ No quarantine issues<br>✅ In PATH automatically | ⚠️ macOS/Linux only | Most users |
+| **Pre-built Binary** | ✅ Simple download<br>✅ All platforms | ⚠️ Manual updates<br>⚠️ Quarantine on macOS | Windows, quick testing |
+| **Build from Source** | ✅ Latest code<br>✅ Customizable | ⚠️ Requires Go toolchain<br>⚠️ Manual builds | Developers, contributors |
+
 ## Building from Source
 
 If you want to contribute or customize:
 
 ```bash
 # Clone the repo
-git clone https://github.com/yourusername/neovim-mcp.git
+git clone https://github.com/cousine/neovim-mcp.git
 cd neovim-mcp
 
 # Install development dependencies (gotestsum, golangci-lint)
