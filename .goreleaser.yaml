@@ -1,0 +1,141 @@
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+version: 2
+
+project_name: neovim-mcp
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: neovim-mcp
+    binary: neovim-mcp
+    main: ./cmd/neovim-mcp
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.revision={{.ShortCommit}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+      - -X main.builtBy=goreleaser
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - freebsd
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+      - arm
+    goarm:
+      - "6"
+      - "7"
+    ignore:
+      - goos: darwin
+        goarch: arm
+  - id: neovim-mcp-win
+    binary: neovim-mcp
+    main: ./cmd/neovim-mcp
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.revision={{.ShortCommit}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+      - -X main.builtBy=goreleaser
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    hooks:
+      post:
+        - sh -c 'command -v upx >/dev/null 2>&1 && upx -9 "{{ .Path }}" || echo "UPX not found, skipping compression"'
+
+archives:
+  - formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    wrap_in_directory: true
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}--checksum.txt"
+
+release:
+  draft: false
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+homebrew_casks:
+  - name: neovim-mcp
+    
+    # Binaries to install
+    binaries:
+      - neovim-mcp
+    
+    repository:
+      owner: cousine
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TOKEN }}"
+    
+    commit_author:
+      name: cousine
+      email: cousine@users.noreply.github.com
+    
+    homepage: https://github.com/cousine/neovim-mcp
+    description: "Control your Neovim editor with AI assistants like Claude"
+    
+    # Ensure casks go to correct directory
+    directory: Casks
+    
+    # Help with homebrew audit
+    url:
+      verified: "github.com/cousine/neovim-mcp"
+    
+    # AUTOMATED: Remove quarantine for Homebrew users
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/neovim-mcp"]
+          end
+    
+    # MANUAL: Instructions for non-Homebrew users and transparency
+    caveats: |
+      This binary is not signed or notarized by Apple.
+      
+      Homebrew has automatically removed the quarantine flag.
+      
+      If you downloaded the binary manually, you may need to run:
+        xattr -d com.apple.quarantine /path/to/neovim-mcp
+      
+      Or allow it in: System Preferences → Security & Privacy
+      
+      To use neovim-mcp, you need Neovim running with a socket:
+        nvim --listen /tmp/nvim.sock
+      
+      Configure in Claude Desktop (see README for full details):
+        ~/Library/Application Support/Claude/claude_desktop_config.json

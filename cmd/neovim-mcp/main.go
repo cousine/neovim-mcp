@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
@@ -14,7 +15,26 @@ import (
 	"github.com/cousine/neovim-mcp/internal/nvim"
 )
 
+// Build information, set via -ldflags during build
+var (
+	version  = "dev"
+	revision = "none"
+	commit   = "none"
+	date     = "unknown"
+	builtBy  = "source"
+)
+
 func main() {
+	// Handle --version flag
+	if len(os.Args) > 1 && (os.Args[1] == "--version" || os.Args[1] == "-v") {
+		fmt.Printf("neovim-mcp %s\n", version)
+		fmt.Printf("  revision: %s\n", revision)
+		fmt.Printf("  commit:   %s\n", commit)
+		fmt.Printf("  built:    %s\n", date)
+		fmt.Printf("  by:       %s\n", builtBy)
+		os.Exit(0)
+	}
+
 	if err := run(); err != nil {
 		panic(err)
 	}
@@ -44,7 +64,10 @@ func run() error {
 		}
 	}()
 
-	logger.Info("Neovim MCP server starting")
+	logger.Info("Neovim MCP server starting",
+		"version", version,
+		"revision", revision,
+		"built", date)
 	logger.Debug("Configuration loaded",
 		"socket", cfg.SocketAddress,
 		"log_level", cfg.Log.Level,
