@@ -1,4 +1,4 @@
-.PHONY: help build clean test test-unit test-integration fmt lint vet run install install-deps dev
+.PHONY: help build clean test test-unit test-integration lint run install install-deps dev
 
 # Variables
 BINARY_NAME=neovim-mcp
@@ -6,7 +6,20 @@ BUILD_DIR=dist
 MAIN_PATH=./cmd/neovim-mcp
 GO=go
 GOFLAGS=-v
-LDFLAGS=-ldflags="-s -w"
+
+# Version information
+VERSION=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+REVISION=$(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
+COMMIT=$(shell git rev-parse HEAD 2>/dev/null || echo "none")
+DATE=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
+BUILT_BY=local
+
+LDFLAGS=-ldflags="-s -w \
+	-X main.version=$(VERSION) \
+	-X main.revision=$(REVISION) \
+	-X main.commit=$(COMMIT) \
+	-X main.date=$(DATE) \
+	-X main.builtBy=$(BUILT_BY)"
 
 # Default target
 help: ## Show this help message
@@ -100,44 +113,12 @@ test-coverage: ## Run tests with coverage report (HTML)
 	@$(GO) tool cover -html=coverage.out -o coverage.html
 	@echo "HTML coverage report generated: coverage.html"
 
-benchmark: ## Run benchmarks
-	@echo "Running benchmarks..."
-	$(GO) test -bench=. -benchmem ./...
-
-# Code quality targets
-fmt: ## Format Go code
-	@echo "Formatting code..."
-	$(GO) fmt ./...
-	@echo "Format complete"
-
-vet: ## Run go vet
-	@echo "Running go vet..."
-	$(GO) vet ./...
-	@echo "Vet complete"
 
 lint: ## Run golangci-lint (requires golangci-lint to be installed)
 	@echo "Running linter..."
 	@which golangci-lint > /dev/null || (echo "golangci-lint not found. Install with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"; exit 1)
 	golangci-lint run ./...
 	@echo "Lint complete"
-
-check: fmt vet ## Run fmt and vet
-
-# Dependency management
-mod-download: ## Download Go modules
-	@echo "Downloading dependencies..."
-	$(GO) mod download
-	@echo "Download complete"
-
-mod-tidy: ## Tidy Go modules
-	@echo "Tidying modules..."
-	$(GO) mod tidy
-	@echo "Tidy complete"
-
-mod-verify: ## Verify Go modules
-	@echo "Verifying modules..."
-	$(GO) mod verify
-	@echo "Verify complete"
 
 install-deps: ## Install required development dependencies
 	@echo "Installing development dependencies..."
@@ -182,35 +163,6 @@ kill-nvim: ## Kill any running Neovim instances
 	@echo "Killing Neovim instances..."
 	@pkill -f "nvim.*listen" || echo "No Neovim instances found"
 	@rm -f /tmp/nvim.sock /tmp/nvim-test.sock
-
-# Documentation
-docs: ## Generate documentation
-	@echo "Generating documentation..."
-	$(GO) doc -all ./... > docs.txt
-	@echo "Documentation generated: docs.txt"
-
-# CI/CD targets
-ci: mod-download check test-unit ## Run CI checks (no integration tests)
-	@echo "CI checks complete"
-
-ci-full: mod-download check test ## Run full CI checks (including integration)
-	@echo "Full CI checks complete"
-
-# Release targets
-release: clean test build ## Build a release version
-	@echo "Release build complete"
-
-release-all: ## Build for multiple platforms
-	@echo "Building for multiple platforms..."
-	GOOS=linux GOARCH=amd64 $(GO) build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64 $(MAIN_PATH)
-	GOOS=darwin GOARCH=amd64 $(GO) build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-amd64 $(MAIN_PATH)
-	GOOS=darwin GOARCH=arm64 $(GO) build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-arm64 $(MAIN_PATH)
-	GOOS=windows GOARCH=amd64 $(GO) build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-windows-amd64.exe $(MAIN_PATH)
-	@echo "Multi-platform builds complete"
-
-# Info targets
-version: ## Show Go version
-	@$(GO) version
 
 deps: ## List dependencies
 	@echo "Direct dependencies:"
