@@ -31,7 +31,7 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 - Test all: `make test` (unit + integration with containers)
 - Test single: `go test -tags=integration -run TestFunctionName ./path/to/package`
 - Lint: `make lint` (requires golangci-lint)
-- Format: `make fmt` or `go fmt ./...`
+- Format: `go fmt ./...`
 - Start Neovim for local testing: `nvim --listen /tmp/nvim.sock`
 
 ## Code Style

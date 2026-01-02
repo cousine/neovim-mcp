@@ -531,10 +531,7 @@ make test-coverage
 ### Code Quality
 
 ```bash
-make fmt                    # Format code (go fmt)
-make vet                    # Run go vet
 make lint                   # Run golangci-lint (strict configuration)
-make check                  # Run fmt + vet
 ```
 
 The project uses a strict golangci-lint configuration based on the golden config. See `.golangci.yml` for details.
@@ -571,9 +568,6 @@ cd neovim-mcp
 
 # Install development dependencies (gotestsum, golangci-lint)
 make install-deps
-
-# Download Go modules
-make mod-download
 
 # Run tests
 make test

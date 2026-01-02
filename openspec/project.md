@@ -20,7 +20,7 @@ An MCP (Model Context Protocol) server that enables AI agents to control and int
 - **Types**: Accept interfaces, return concrete structs
 - **Comments**: Godoc on exported items; start with the identifier name
 - **Logging**: Use structured slog: `logger.Info("msg", "key", value)`
-- **Formatting**: Run `make fmt` or `go fmt ./...`
+- **Formatting**: Run `go fmt ./...`
 
 ### Architecture Patterns
 - **Package Structure**:
@@ -50,7 +50,6 @@ An MCP (Model Context Protocol) server that enables AI agents to control and int
 ### Git Workflow
 - Feature branches off main
 - Conventional commits preferred (feat:, fix:, docs:, refactor:, test:)
-- Run `make check` (fmt + vet) before committing
 - Run `make lint` if golangci-lint is installed
 
 ## Domain Context
